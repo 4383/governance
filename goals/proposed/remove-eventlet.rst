@@ -1,9 +1,9 @@
 ==============================
-Remove Eventlet from Openstack
+Remove Eventlet from OpenStack
 ==============================
 
-Giving to all the Openstack teams, themselves responsible of a collection
-of deliverables who constitutes the Openstack components, a solution
+Giving to all the OpenStack teams, themselves responsible of a collection
+of deliverables who constitutes the OpenStack components, a solution
 to securely remove their dependence to Eventlet, usable by everyone,
 regardless of their resources, while by ensuring the enjoyment of
 decision-making autonomy for each team. Combine the parts of this proposal
@@ -15,17 +15,17 @@ of freedom individual, this is the problem we had to solve.
 Problem
 =======
 
-Openstack is build on the top of asynchronous mechanisms.
+OpenStack is build on the top of asynchronous mechanisms.
 
-All the Openstack components heavily relies on the Eventlet library to
-obtain asynchronous features and greenlet coroutines, however, the Openstack
+All the OpenStack components heavily relies on the Eventlet library to
+obtain asynchronous features and greenlet coroutines, however, the OpenStack
 community currently suffer from many aspects of the usage of that library.
 
 Indeed this library currently do not support Python 3.12 and face many issues
 with Python 3.11 (those are described below).
 
 This new python version will be part of the supported runtime in the coming
-Openstack series. At least Python 3.12 should be a supported runtime of the
+OpenStack series. At least Python 3.12 should be a supported runtime of the
 "Dalmatian" series. 2024.1/Caracal currently `support Python 3.11 <https://governance.openstack.org/tc/reference/runtimes/2024.1.html>`_.
 
 Many distros already started to transition to Python 3.12. That's the
@@ -103,15 +103,15 @@ situation:
 Root Cause
 ==========
 
-One could think that the root cause of the Openstack issue described above
+One could think that the root cause of the OpenStack issue described above
 lives in the recent lack of maintenance of the Eventlet library, yet this is
 not the case. Even if Eventlet simplified the life of the community developers
 for years, one can't ignore the fact that by its inherent philosophy and
-nature it has only widened the gap between the Openstack code base and the
+nature it has only widened the gap between the OpenStack code base and the
 CPython stdlib implementation.
 
 Now, because of the usage of Eventlet, 13 major releases of CPython implicitly
-separate Openstack and CPython.
+separate OpenStack and CPython.
 
 Thinking that the recent lack of maintenance in Eventlet explain our current
 issue and hoping that simply fixing two or three things will unlock our
@@ -133,7 +133,7 @@ One could think that the Eventlet case is an isolated case. Unfortunately not.
 The same observation is true for the vast majority of other third parties
 libraries. Almost all these libraries rest on the shoulders of one or two
 people. It's the harsh law of the open source ecosystem. **Scarcity lead the
-world**. Only mainstream projects like CPython or Openstack has decent
+world**. Only mainstream projects like CPython or OpenStack has decent
 resources. **Winners take all**.
 
 The root cause of the problems described here is due to the fact of using
@@ -146,23 +146,23 @@ All the problems described above inherit from choices made in Eventlet,
 several years ago, to improve older versions of Python, 2.7 at least. All the
 current issues are related to Eventlet design implementations made for Python
 EOL versions. Design choices and implementation made at a time where the
-Python stdlib was not designed to support async. That mean that Openstack is
+Python stdlib was not designed to support async. That mean that OpenStack is
 now really far from the concurrency approach chosen by our main runtime,
 Python. An approach that is the future of the main technology on which rest
-all Openstack, Python.
+all OpenStack, Python.
 
 Even if Python 2.7 is now EOL and even if its support have been dropped from
-Openstack years ago, today we are still impacted by previous design choices
+OpenStack years ago, today we are still impacted by previous design choices
 made for it.
 
 One major argument initially brandished to defend usage of Eventlet inside
-Openstack was one of those was to avoid explicit concurrency in our code base.
+OpenStack was one of those was to avoid explicit concurrency in our code base.
 Monkey patching. We use Eventlet as an optional, pluggable, backend that
 allows swapping out blocking APIs for an event loop, transparently, without
 changing any code. However, with time, this affirmation has become false. Now,
 `numerous are the examples <https://codesearch.openstack.org/?q=is_monkey_patched&i=nope&literal=nope&files=&excludeFiles=&repos=>`_
-where Openstack source code now has a whole bunch of patches necessary for
-Eventlet to work properly.  `Locks are heavily used in sync designed Openstack
+where OpenStack source code now has a whole bunch of patches necessary for
+Eventlet to work properly.  `Locks are heavily used in sync designed OpenStack
 code <https://codesearch.openstack.org/?q=self.lock%3A&i=nope&literal=nope&files=&excludeFiles=&repos=>`_
 , where, apparently, no explicit concurrency is expected. Eventlet has
 infected synchronous code. Even our initial arguments have evaporated with
@@ -172,36 +172,36 @@ Is all this Eventlet problem are solvable? Is the gap recoverable?
 Yes, but at a significant cost.
 
 Investing money, time, and engineering skills in a solution that will continue
-to diverge from the main runtime pillar of Openstack, Python, isn't something
+to diverge from the main runtime pillar of OpenStack, Python, isn't something
 conceivable.
 
 Investing energy in a solution that is made to improve dead version of Python
 is not something rational.
 
-Investing Openstack's precious - decreasing - resources in a migration toward
+Investing OpenStack's precious - decreasing - resources in a migration toward
 one an other library likes Eventlet, without it having good and long term
 maintenance capabilities is not something desirable neither. We would face the
 same situation again, sooner than we think.
 
 The current situation, trigger a signal to the community. The community should
-catch this event to decide actions to lead Openstack toward a solution.
+catch this event to decide actions to lead OpenStack toward a solution.
 A realistic solution. A pragmatic solution. A deterministic solution.
 
 We should design a solution, that once is applied, must ensure that the
 current inputs always provides the same outputs. No regressions.
 
-Sustainability should be the main priority of the Openstack community.
+Sustainability should be the main priority of the OpenStack community.
 Our sustainability should be based on the future of Python, not on its past.
 
-Eventlet is not a sustainable solution for a project like Openstack. Eventlet
+Eventlet is not a sustainable solution for a project like OpenStack. Eventlet
 struggles to remain compatible with CPython. Using Eventlet introduce
 a gap between us and the CPython stdlib. We should adopt a solution that
 remove that gap.
 
 But... Our challenge is to find a solution which leaves no one behind.
-Our challenge is to find a solution that every Openstack team can adopt.
+Our challenge is to find a solution that every OpenStack team can adopt.
 Our challenge is to find a solution that respect freedom of choice of every
-Openstack team.
+OpenStack team.
 Our challenge is to find a solution which take account of the evolution
 of the Python ecosystem.
 
@@ -210,10 +210,10 @@ Solution disclaimers
 
 On the Perspective of the Proposed Solution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-**The solution proposed below focus exclusively on Openstack components that
-currently relies on Eventlet. Openstack components which are not relying on
+**The solution proposed below focus exclusively on OpenStack components that
+currently relies on Eventlet. OpenStack components which are not relying on
 Eventlet can safely ignore this proposal. The proposed solution is a by
-default solution. Like with all governance goals, Openstack teams are free to
+default solution. Like with all governance goals, OpenStack teams are free to
 design their own solution.**
 
 We should notice that Many teams do not have time and resources to follow
@@ -226,9 +226,9 @@ teams who wants it.
 
 Our goal is to get rid of Eventlet, and without default solution these teams
 will remains dependent of Eventlet, and, hence, Eventlet will continue to
-threaten the coming Openstack releases.
+threaten the coming OpenStack releases.
 
-`Openstack leaders are expected to put the needs of Openstack first in their
+`OpenStack leaders are expected to put the needs of OpenStack first in their
 decision making, before the needs of any individual project team
 <https://governance.openstack.org/tc/reference/principles.html#openstack-first-project-team-second-company-third>`_.
 For this reason, readers should appreciate this proposal with a global
@@ -243,7 +243,7 @@ Today, in 2024, the CPython stdlib, includes coroutines and async
 features - Asyncio. Unlike Eventlet, Asyncio bring explicit asynchronous
 features. But explicit is explicitly explicit... Asyncio is by nature
 invasive. This invasive nature have a cost. This nature increase the cost
-of the adoption of Asyncio on a code base like the Openstack one.
+of the adoption of Asyncio on a code base like the OpenStack one.
 We can't neglect that point.
 
 *Parallelism* is when tasks literally run at the same time, e.g.,
@@ -276,7 +276,7 @@ obligation. Eventlet can't be removed abruptly. We need a replacement for
 Eventlet.**
 
 This proposal aim to make Eventlet work again on the short run.
-Then incrementally abandon Eventlet in favor of alternatives to keep Openstack
+Then incrementally abandon Eventlet in favor of alternatives to keep OpenStack
 healthy on the long run.
 
 The purpose of Eventlet is to manage asynchronism, coroutines. To do that
@@ -294,13 +294,13 @@ behind the monkey patching mechanisms from Eventlet. They are designed to be
 cooperative and sequential. This means that when one greenlet is running, no
 other greenlet can be running.
 
-Openstack use Eventlet in both ways. Openstack use monkey patching to run
+OpenStack use Eventlet in both ways. OpenStack use monkey patching to run
 asynchronous networks I/O and so to non block processes during network
 communications.
 
-Openstack use green threads pools and greenlet as executor. Those can be used
+OpenStack use green threads pools and greenlet as executor. Those can be used
 among other examples, to launch cooperative threads, to run workers, and to
-launch periodic tasks. A concrete example of greenlet usage in Openstack is
+launch periodic tasks. A concrete example of greenlet usage in OpenStack is
 the thread launched to manage the RADOS Block Device (RDB) calls. Those calls
 are executed in Eventlet tpool while the current coroutine/greenthread is
 blocking until the method completes.
@@ -316,7 +316,7 @@ greenlet invocations. We need to find a solution to manage tasks, and workers
 based on greenlet mechanisms.
 
 The solution described here propose to smoothly migrate from a broken
-Eventlet that threaten new Openstack releases, to an healthy Openstack free
+Eventlet that threaten new OpenStack releases, to an healthy OpenStack free
 from Eventlet. All of that would be possible by keeping Eventlet healthy in
 the short run.
 
@@ -327,7 +327,7 @@ tactics items. The solution described here is composed of 3 aspects:
    and priority. This schedule is composed of 3 global milestones, short,
    medium, and long term. The schedule is the global strategy which aim to
    define how to move from A to Z. The strategy to define how to remove
-   Eventlet from Openstack. The milestone items are tactics;
+   Eventlet from OpenStack. The milestone items are tactics;
 
 #. a guide on which teams can rely to migrate their deliverables. This
    guide is based on a hierarchy of specifications which aim to produce
@@ -336,7 +336,7 @@ tactics items. The solution described here is composed of 3 aspects:
    developers according to their needs and to the complexity that they are
    ready to accept. This guide is one tactics item;
 
-#. 2 ways to adapt all the Openstack deliverables depending on their types,
+#. 2 ways to adapt all the OpenStack deliverables depending on their types,
    common libraries, or services. Both are high level migration
    plans at destination of a single type of deliverable. Again this is a
    tactics item.
@@ -356,7 +356,7 @@ Short terms solutions (done)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As Python 3.12 will be a supported runtime in the next coming
-Openstack series, the support issue should be quickly fixed.
+OpenStack series, the support issue should be quickly fixed.
 
 So, In short terms Eventlet itself should be fixed first.
 
@@ -394,7 +394,7 @@ Here is a plan proposal to see this milestone succeed:
    * https://pypi.org/project/eventlet/0.34.1/
    * https://pypi.org/project/eventlet/0.34.2/
 
-#. Upgrade the Openstack requirements to match this new version. (*done*)
+#. Upgrade the OpenStack requirements to match this new version. (*done*)
 
    * https://review.opendev.org/c/openstack/requirements/+/904147
    * https://review.opendev.org/c/openstack/requirements/+/907048
@@ -404,18 +404,18 @@ Here is a plan proposal to see this milestone succeed:
 Medium terms solutions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Now Eventlet can be considered as healthy and Openstack secured for the coming
+Now Eventlet can be considered as healthy and OpenStack secured for the coming
 series (2024.2/Dalmatian).
 
 As our goal is to remove Eventlet and as Eventlet occupies an important place
-in Openstack, we would have to consider the following points:
+in OpenStack, we would have to consider the following points:
 
 #. Asyncio in some aspects may be a credible alternatives to many Eventlet
    use cases. If some deliverables are eager to use some Asyncio based
    solutions they would surely also aim to use our common libraries in an
    Asyncio based fashion.
 
-   For this reason, if common libraries from Openstack have the opportunity
+   For this reason, if common libraries from OpenStack have the opportunity
    to offer drivers, backends, or facades based on Asyncio, in addition of
    the already existing drivers, backends, and facades, then they must
    provide these opportunity to not closing the door of the Asyncio based
@@ -425,7 +425,7 @@ in Openstack, we would have to consider the following points:
    libraries like aiohttp etc...
 
    If common libraries close the door to Asyncio, then that will close the
-   door of using Asyncio in the majority of the Openstack deliverables.
+   door of using Asyncio in the majority of the OpenStack deliverables.
 
    For more details about the migration guide and the proposed alternatives
    please see :ref:`migration-guide`.
@@ -487,16 +487,16 @@ the first bricks. Here are items for milestone 2:
    So, in a first time will have to deprecate oslo.service, and to provide
    migration paths toward Cotyledon and Futurist.
 
-   Once oslo.service won't be used anymore in Openstack, we will be free to
+   Once oslo.service won't be used anymore in OpenStack, we will be free to
    abandon it.
 
-#. Introduce Asyncio in the first Openstack bricks (a couple of identified
+#. Introduce Asyncio in the first OpenStack bricks (a couple of identified
    libraries):
    * oslo.messaging;
    * oslo.db
    * oslo.concurrency;
    * oslo.cache;
-   * OpenstackSDK (SDK is blocking and do not support async, it should be also
+   * OpenStackSDK (SDK is blocking and do not support async, it should be also
    migrated to Asyncio to avoid wrapping rest calls made to other services)
 
    These deliverables should provide Asyncio based drivers/backends in
@@ -566,7 +566,7 @@ Here are the main steps to conduct this long terms migration:
    the absence of new releases since more than 5 months from the beginning
    of the current series at this time.
 
-#. Migrate all the Openstack remaining deliverables not yet migrated:
+#. Migrate all the OpenStack remaining deliverables not yet migrated:
 
    * Remaining libraries should be migrated first.
    * Easily one should be migrated as soon as possible to allow harvesting
@@ -593,12 +593,12 @@ Here are the main steps to conduct this long terms migration:
    are already migrated, then all useless third parties requirements could
    be removed.
 
-#. Once all the Openstack migration would be done we would have to Plan the
+#. Once all the OpenStack migration would be done we would have to Plan the
    retirement of Eventlet, or, at least, we would have to socialize the fact
    that we don't have anymore interest in continuing maintaining this library,
-   so if the Openstack maintainers involved in Eventlet want to retire, then
+   so if the OpenStack maintainers involved in Eventlet want to retire, then
    they would to socialize their departure. If someone else, outside of
-   Openstack, volunteer to continue the Eventlet adventure, then, we would
+   OpenStack, volunteer to continue the Eventlet adventure, then, we would
    have to bequeath this project to him.
 
 .. _how-to-migrate-our-deliverables:
@@ -607,9 +607,9 @@ How to migrate our deliverables
 ===============================
 
 Here is a proposal to define the different required steps to migrate an
-Openstack deliverable.
+OpenStack deliverable.
 
-The Openstack Python code base is mostly composed of libraries and services.
+The OpenStack Python code base is mostly composed of libraries and services.
 The migration plan may differ depending the kind of deliverable.
 
 We should notice that an incremental migration really increase the complexity
@@ -620,8 +620,8 @@ migrated. Migrating this way could lead us to a blur state.
 How to migrate a library
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Consider the migration of a single one Openstack library (e.g oslo.messaging,
-OpenstackSDK, ...). Lets call this Openstack library example ``oslo.demo``.
+Consider the migration of a single one OpenStack library (e.g oslo.messaging,
+OpenStackSDK, ...). Lets call this OpenStack library example ``oslo.demo``.
 Lets consider that the ``oslo.demo`` library provide existing drivers to
 communicate with backends.
 
@@ -691,10 +691,10 @@ How to migrate a service
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 As for libraries, the migration of services could be incremental.
-As long as the Openstack deliverables start releasing migrated sub modules
+As long as the OpenStack deliverables start releasing migrated sub modules
 operators would be able to start using them.
 
-As for the oslo.demo example, let's consider an hypothetical Openstack service
+As for the oslo.demo example, let's consider an hypothetical OpenStack service
 named ``supernova``. Migrating a service like ``supernova`` would mean:
 
 #. Upgrade the minimal version of Eventlet in ``requirements.txt`` file.
@@ -717,10 +717,10 @@ named ``supernova``. Migrating a service like ``supernova`` would mean:
    As `the Asyncio hub was added within Eventlet 0.35.0 <https://github.com/eventlet/eventlet/releases/tag/v0.35.0>`_,
    this will require Eventlet in a version equal or higher to version 0.35.0.
 
-#. As a service migration could represent an heavy workload, and as Openstack
+#. As a service migration could represent an heavy workload, and as OpenStack
    resources are more decreasing than increasing, we recommend to split
    the transition into subtopics. Firstly we would recommend to identify
-   if teams want to use the Asyncio based facade of the Openstack libraries.
+   if teams want to use the Asyncio based facade of the OpenStack libraries.
    Else, teams should decide of the execution model of these libraries that
    best fits their needs. They can use the migration guide to compare
    alternatives.
@@ -730,7 +730,7 @@ named ``supernova``. Migrating a service like ``supernova`` would mean:
 
    In a supernova context, splitting topics would translate, by example, by,
    starting migrating oslo.messaging first, once done, start migrate
-   oslo.cache, and so on. Then, once all Openstack library
+   oslo.cache, and so on. Then, once all OpenStack library
    usages are transitioned then, start migrating third parties libraries calls
    directly made into supernova. And then replace all occurrence of Eventlet
    coroutines by something else, by example native threads.
@@ -742,7 +742,7 @@ named ``supernova``. Migrating a service like ``supernova`` would mean:
    an active topic or not - a transition to be made.
 
    We could maintains a requirements matrix helping to identify which
-   versions of Openstack libraries are already migrated or not and maybe
+   versions of OpenStack libraries are already migrated or not and maybe
    what is their level of migration completeness.
 
 #. As for libraries we want to migrate the unit tests of supernova lastly, so
@@ -861,12 +861,12 @@ asyncio, threading and on third party libraries, like Futurist and Cotyledon.
 
 Asyncio target two main audiences:
     * end-users developers who wants to make applications using asyncio -
-      Some may consider Openstack services (neutron, nova, etc);
+      Some may consider OpenStack services (neutron, nova, etc);
     * framework developers who wants to make frameworks and libraries that
       end-users developers can use in their applications -
-      Some may consider Openstack shared libraries (oslo, etc).
+      Some may consider OpenStack shared libraries (oslo, etc).
 
-But the Openstack world is not so waterproof, and it is common to see services
+But the OpenStack world is not so waterproof, and it is common to see services
 which implements API, so even services may be seen as a framework developers
 audience.
 
@@ -968,7 +968,7 @@ point raise at least 2 concerns that we cannot ignore:
    paradigm for our ecosystem. A paradigm which is rather the prerogative of
    low level developers. *C* developers.
 
-#. Many third party libraries in use in Openstack are binding of *C*
+#. Many third party libraries in use in OpenStack are binding of *C*
    libraries, or rely on *C* libraries. Greenlet is the perfect example of
    that. The GIL option-ability will allow these binding to don't shy away
    from using parallelism. That was not possible before, but the door ajar.
@@ -984,9 +984,9 @@ point raise at least 2 concerns that we cannot ignore:
    * we may have to stick to older and outdated versions of these libraries
      and so which could represent a significant security problem for us.
 
-Abruptly using parallelism in Openstack without a codified structure will lead
+Abruptly using parallelism in OpenStack without a codified structure will lead
 to unexpected problems. Problems that by their nature are hard to solve.
-Disabling the GIL without using structures would lead Openstack deliverables
+Disabling the GIL without using structures would lead OpenStack deliverables
 into traps.
 
 We should anticipate that emerging trends and think in ways to adapt to the
@@ -1140,7 +1140,7 @@ This solution try to identify the coming corners that the PEP 703 will
 open into the CPython ecosystem.
 
 The proposed solution is a pragmatic solution which try to respect
-the autonomy of Openstack teams in their decision making. On the
+the autonomy of OpenStack teams in their decision making. On the
 other hand autonomy of action leads to disparate solutions.
 That's the other side of the coin, we have to find a compromize
 between feasability and pragmatism.
@@ -1158,7 +1158,7 @@ To summarize, this goal, will reward us with major gains:
 Conclusion
 ==========
 
-| A community goal does not shape a new and personal vision of Openstack.
+| A community goal does not shape a new and personal vision of OpenStack.
 | A Community goal collects this vision from the scattered hopes and
   intentions of our community's past.
 
@@ -1205,14 +1205,14 @@ Completion Criteria
 ===================
 
 #. (done) Get an healthy new version of Eventlet;
-#. (done) Be able to support Python 3.12 and higher version as an Openstack runtime;
+#. (done) Be able to support Python 3.12 and higher version as an OpenStack runtime;
 #. (done) Get Asyncio supported by Eventlet and vice versa;
 #. Get the oslo world fully migrated;
-#. Get libraries like OpenstackSDK migrated;
+#. Get libraries like OpenStackSDK migrated;
 #. Get a reference user project elected;
 #. Get non actively maintained deliverables retired;
-#. Get all other Openstack deliverables relying on Eventlet migrated;
-#. Get Eventlet retired from Openstack;
+#. Get all other OpenStack deliverables relying on Eventlet migrated;
+#. Get Eventlet retired from OpenStack;
 #. Get Eventlet abandoned or bequeath to someone else.
 
 References
@@ -1232,7 +1232,7 @@ Previous similar attempts and discussions
 - `The oslo.messaging NATS driver <https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org/thread/TOZU6ONOSOD6BBHTCBVHWG6HPOOLOW6N/#U4F4I4OURQMIP6PVKARG6UT2JB6XU2PM>`_
 - `Specs to add the NATS transport driver to oslo.messaging <https://review.opendev.org/c/openstack/oslo-specs/+/692784>`_
 
-A brief Eventlet history in Openstack
+A brief Eventlet history in OpenStack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - https://wiki.openstack.org/wiki/Obsolete:UnifiedServiceArchitecture
@@ -1246,7 +1246,7 @@ Identified Blocking Points
 Epolls Multiple Readers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Openstack rely on hacks who allow to disable the Eventlet protection
+OpenStack rely on hacks who allow to disable the Eventlet protection
 against race condition. Indeed, by default Eventlet's hub prevent multiple
 readers (greenlets) reading from a socket. However, Eventlet also come
 with a **debug** convenience who allow to disable this protection. Hence,
@@ -1299,7 +1299,7 @@ Current State / Anticipated Impact
 ==================================
 
 * Progress is maintained on the below wiki page:
-  https://wiki.openstack.org/wiki/Modernize_Openstack_Networking_Programming_Model
+  https://wiki.openstack.org/wiki/Modernize_OpenStack_Networking_Programming_Model
 * aihub discussions and pre-specs are currently hosted on the below wiki page:
   https://wiki.openstack.org/wiki/Aiohub-Discussion
 * Identification of Eventlet based deliverables that can be easily migrated to
