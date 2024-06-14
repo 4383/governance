@@ -284,6 +284,8 @@ decision making, before the needs of any individual project team
 For this reason, readers should appreciate this proposal with a global
 perspective and not only with a team based perspective.
 
+.. _on-the-standards-of-the-industry:
+
 On the Standards of the Industry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -415,9 +417,7 @@ The solution proposed here is composed of the following elements:
 #. a global schedule of the whole steps required to remove Eventlet from
    OpenStack. This global schedule is composed of 3 global milestones, short,
    medium, and long term. Each milestone is ordered in terms of priority
-   and of dependency. The schedule is the global strategy which aim to
-   define how to move from A to Z. The strategy to define how to remove
-   Eventlet from OpenStack;
+   and of dependency. This section aim to define how to move from A to Z;
 
 Removing our dependency to Eventlet is a real challenge, and, we can't
 take such challenge without strategy and tactics. Each items which compose
@@ -432,6 +432,85 @@ Lets see how to do that removal.
 The Alternatives
 ================
 
+We need alternatives to replace Eventlet. One Alternative one choice, many
+alternatives many choices. Varietyis the key of decision-making autonomy.
+
+This section propose to define a couple of identified alternatives. Defining
+is limiting. Without limits no assistance is possible. Without limits lots of
+misunderstanding lies in wait for us.
+
+The first objective of this community goal is to help and to assist. If
+teams have no assistance, Eventlet, as a blackboxes, will remains here. If
+teams decide to follow an other path, unfortunatelly, we won't be able to
+assist them.
+
+The second objective of this community goal is to avoid misunderstanding.
+Misunderstanding lead to blackboxes. Bots are roots of traps. We want to
+prevent us from taking the wrong path.
+
+The list of the selected alternatives proposed below is not fully exhaustive.
+Some other options may be added during our discussions, provided that we are
+able to provide a minimal understanding and expertise.
+
+How using the following alternatives is defined into the guide proposed
+later in this document. These selected alternatives and their definition will
+be stored in guide. :ref:`migration-guide`.
+
+Greenlet
+~~~~~~~~
+
+Is it still necessary to present `Greenlet <https://greenlet.readthedocs.io/en/latest/>`_?
+
+Greenlets are lightweight coroutines for in-process sequential concurrent
+programming.
+
+Even if eventlet is ill, Greenlet is healthy. Eventlet depends on Greenlet.
+Greenlet is totally independent from Eventlet.
+
+In several case we could use greenlets and its coroutines. Greenlet can be
+used to run workers or specific tasks who needs to be detached from the main
+thread.
+
+Unlike with Eventlet the code ran into these coroutines would become blocking.
+
+Greenlet are frequently defined by analogy to threads. For many purposes, you
+can usually think of greenlets as cooperatively scheduled threads. The major
+differences are that since these greenlets are cooperatively scheduled, you
+are in control of when they execute, and since they are coroutines, many
+greenlets can exist in a single native thread.
+
+Threads (in theory) are preemptive and parallel [1], meaning that multiple
+threads can be processing work at the same time, and it’s impossible to say
+in what order different threads will proceed or see the effects of other
+threads.
+
+AsyncIO
+~~~~~~~
+
+As with Greenlet, we don't think it is necessary to present AsyncIO.
+
+AsyncIO is Python’s built-in coroutines. AsyncIO is designed around concepts
+like generators and async def functions. AsyncIO is a module made to write
+concurrent code.
+
+Unlike Eventlet, Asyncio bring explicit asynchronous features. But explicit is
+explicitly explicit... Asyncio is by nature invasive. This invasive nature
+have a cost. This nature increase the cost of the adoption of Asyncio on a
+code base like the OpenStack one. We can't neglect that point.
+
+Most of our parallel things made in OpenStack are network calls. Network
+calls who are blocking IO.
+
+Asyncio is not affected by the GIL, but it cannot benefit from multiple CPU
+either. In Asyncio each task decide to when get back control to the main event
+loop. Asyncio coroutines avoid context switching. Asyncio save system
+resources.
+
+In short, Asyncio offers:
+
+* a safer alternative to preemptive multitasking.
+* a simple way to support many thousand of simultaneous socket connections.
+
 Awaitlet
 ~~~~~~~~
 
@@ -442,9 +521,14 @@ intermediary code to remain completely unchanged. Its primary use is to
 support code that is cross-compatible with asyncio and non-asyncio runtime
 environments.
 
-Internally Awaitlet rely on AsyncIO and Greenlet in the same time.
+Internally Awaitlet rely on AsyncIO and Greenlet in the same time. Awaitlet
+bringing together the best of both worlds.
 
-Awaitlet bringing together the best of both worlds.
+Awaitlet is a concepts that found its roots in SQLAlchemy. Awaitlet is
+a standalone implementation of this concept. An extract. The Awaitlet
+initiative is born from the comments made by Mike Bayer earlier in this
+proposal, and is born from the different discussions who followed these
+comments.
 
 Awaitlet allow using AsyncIO and its derived libraries (aiohttp, etc...)
 without requiring a complete rewrite of all our applications.
@@ -452,58 +536,100 @@ without requiring a complete rewrite of all our applications.
 Awaitlet is a good deal between modern concurrency, and simplicity of
 implementation.
 
-Greenlet
-~~~~~~~~
-
-Is it still necessary to present `Greenlet <https://greenlet.readthedocs.io/en/latest/>`_?
-
-Even if eventlet is ill, Greenlet is healthy. Eventlet depends on Greenlet.
-Greenlet is totally independent from Eventlet.
-
-In several case we use greenlets
-
-AsyncIO
-~~~~~~~
-
-AsyncIO
-
-Unlike Eventlet, Asyncio bring explicit asynchronous
-features. But explicit is explicitly explicit... Asyncio is by nature
-invasive. This invasive nature have a cost. This nature increase the cost
-of the adoption of Asyncio on a code base like the OpenStack one.
-We can't neglect that point.
-
 Aiohttp
 ~~~~~~~
 
+Aiohttp is Asynchronous HTTP Client/Server library for AsyncIO and Python.
+
+We think that Aiohttp is a credible alternative to many usecases
+provided by Eventlet's patterns (see
+:ref:`Asynchronous HTTP Client/Server for asyncio and Python.`).
+
 Using aiohttp de facto lead us to using AsyncIO. Rewriting a server module
-with aiohttp may require a significant amounts of works.
+with aiohttp may require a significant amounts of works. Fortunatelly for us
+Aiohttp can now be used through the mechanisms offered by AwaitLet.
+
+Eventlet's Asyncio Hub
+~~~~~~~~~~~~~~~~~~~~~~
+
+Eventlet's is Asyncio Hub is a compatibility layer between Asyncio and
+Eventlet. This hub has been recently introduced. Like Awaitlet, the creation
+of this hub find its roots in the discussions related this community goal
+proposal.
+
+This hub is not strictly speaking an alternative to Eventlet. This hub is
+Eventlet. But this hub is a like a proxy which allow using the other
+Alternatives presented here.
+
+This hub would allow us to use AsyncIO, Aiohttp, Awaitlet etc in the same
+time that Eventlet. This hub is a the key of a smooth migration.
 
 Threading
 ~~~~~~~~~
 
-Futurist
-~~~~~~~~
+To finish, threading and native threads could be used to run tasks in a
+parallel fashion.
 
-Cotyledon
-~~~~~~~~~
+As Eventlet rely on green threads and greenlet, in many aspects, it would
+surely more easier to migrate our Eventlet existing code to native threads.
+On the other hand, using Awaitlet could provide a credible alternative to
+threads, depending on the context.
+
+Before using threads, the reader should consider some aspects of using
+threads.
+
+*Threading* - as a programming model - is best suited to certain
+kinds of computational tasks that are best executed with multiple CPUs and
+shared memory for efficient communication between the threads. In such tasks,
+the use of multicore processing with shared memory is a necessary evil because
+the problem domain require it. Network programming is not one of those
+domains. The key insight is that network programming involves a great deal of
+*"waiting for things to happen"* and because of this, we don't need the
+operating system to efficiently distribute our tasks over multiple CPUs.
+Furthermore, we don't need the risks that preemptive multitasking brings, such
+as race conditions when working with shared memory.
+
+Threads consume a lot of preallocated virtual memory per thread (8Mb stack
+space per thread). Threads requires context switching even when threads are
+waiting from an IO. At very high concurrency levels, there can also be an
+impact on throughput due to `context switching costs
+<https://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html>`_.
+
+Threads are resources intensive and not particularly designed for non blocking
+IO.
+
+In Python, threads are impacted by the GIL in many aspects. We won't repeat
+the problem with *parallelism* in Python in this section, rather we invite the
+reader to go to :ref:`on-the-standards-of-the-industry`.
+
+Other alternatives
+~~~~~~~~~~~~~~~~~~
+
+Depending on specific needs, other alternatives could find their place here,
+like Futurist or Cotyledon. But as they are really related to specific aspects
+not related to the Eventlet patterns we won't list them here, but we will
+speak about them later in this document. Especially because oslo.service is
+impacted by the removal of Eventlet. But Cotyledon and Futurist are more
+related to features of oslo.service rather than to Eventlet itself.
 
 .. _migration-guide:
 
 Migration Guide
 ===============
 
-The migration guide rest on 2 pillars:
+The migration guide rest on 3 pillars:
+
+#. The guide would define the official alternatives where we would be
+   able to provide assistance. ;
 
 #. The guide must provide a glossary to ensure that everyone as the same
-   understanding of terms;
+   understanding of the used terms;
 
 #. the guide aim to provide a table of correspondences that developers
    can use to migrate their code and hence remove their Eventlet usages.
-   That table of correspondence is hierarchically organized in tiers;
 
-This section simply aim to offer an overview of what this guide could look
-like.
+**This section simply aim to offer an overview of what this guide could look
+like**.
 
 The guide proposal made in this document don't aim to give all the possible
 details that can find their place in this guide. This proposal simply opens
@@ -511,11 +637,23 @@ this referential. The details of the different section of this guide should
 be defined in a parallel spec/blueprint/review.
 
 As new usages of Eventlet are discouraged, and as migrating off of Eventlet
-is encourage, we think that this guide will benefit to a more broader audience
-if it is hosted into the Eventlet documentation itself. The whole Python
-community would benefit of this guide and of our works.
+is encouraged, we think that this guide will benefit to a more broader
+audience if it is hosted into the Eventlet documentation itself. The whole
+Python community would benefit of this guide and of our works.
 
 Lets now observe the details and concepts of each pillars.
+
+The Storage of the Alternatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+That's just the storage of the elements, the alternatives, from the previous
+section. Alternatives may be seen as something alive, so the guide needs to
+remains up-to-date in accordance with the possible additions.
+
+we may think the selected alternatives as a shelve of raw materials.
+Elementary bricks. Building house requires bricks, but it also require
+architectural plan. The table of correspondances below is the architectural
+plan.
 
 The Glossary
 ~~~~~~~~~~~~
@@ -527,6 +665,8 @@ The glossary aim to define terms like:
 
 * concurrency;
 * parallelism;
+* preemptive;
+* cooperative;
 * coroutine;
 * task;
 * thread;
@@ -660,8 +800,11 @@ solutions like the web server of the ``aiohttp`` lib that can be a solution
 to replace the WSGI features of Eventlet.
 
 To conclude this section, we may think this hierarchical organisation as a
-shelve of raw materials. Elementary bricks. Building house requires bricks,
-but it also require architectural plans.
+architectural plan. Where are the rooms, the plumbing, the electricity.
+But building house requires a schedule. A kind of Gantt's diagram is now
+necessary.
+
+Lets see how to schedule the building of a single house.
 
 .. _how-to-migrate-our-deliverables:
 
@@ -839,15 +982,27 @@ named ``supernova``. Migrating a service like ``supernova`` would mean:
    Eventlet usage, and, hence, avoid wasting time by fixing something that
    will be removed soon.
 
+Now that we are able to construct a single house, lets see how to design
+different districts which would reprensent at the end an entire city.
+Again we are close in meanning of something like a Gantt's diagram.
+
 .. the-global-strategy::
 
 The global Strategy
 ===================
 
+This global strategy, the global schedule, is composed of 3 global milestones.
+A short term milestone, a medium term milestone, and long term milestone.
+Each milestone is ordered in terms of priority and of dependency.
+
 .. short-terms-solution::
 
 Short terms solutions (done)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*The short term milestone is where we were 6 months ago. Even if this
+milestone is now done, we prefered to keep this milestone under this document
+to provide a full and unified context.*
 
 As Python 3.12 will be a supported runtime in the next coming
 OpenStack series, the support issue should be quickly fixed.
@@ -944,6 +1099,19 @@ the first bricks. Here are items for milestone 2:
 
    * https://github.com/eventlet/eventlet/issues/869
    * https://eventlet.readthedocs.io/en/latest/asyncio/migration.html#migration-guide
+
+#. Creating the AwaitLet library. (*done*)
+
+   Following the `comments related to the previous patch set of this proposal
+   <https://review.opendev.org/c/openstack/governance/+/902585/comment/289922c2_42aaa933/>`_
+   the AsyncIO-greenlet pattern created by Mike Bayer has been identified as a
+   possibile solution, in some circumstances, to some OpenStack scenarios,
+   for this reason we think that providing a standalone implementation
+   of this pattern would translate into a good opportunity for us to
+   solve this challenge.
+
+   This pattern is internal to SQLAlchemy, the objective of this item is to
+   provide a standalone deliverable that host this pattern.
 
 #. Identify and add replacement third parties libraries into
    ``openstack/requirements``. It exists good candidates replacement for
@@ -1106,6 +1274,14 @@ Here are the main steps to conduct this long terms migration:
 Limitations of the proposed solution
 ====================================
 
+The reader should be aware that proposed solution do not provide any
+guarantee if the GIL is disabled, especially if teams decide to prefer the
+usage of native threads to replace existing code based on Eventlet.
+
+We cannot predict the impacts of such change, this is why this
+solution can give guarantees in this context
+(:ref:`on-the-standards-of-the-industry`). However, we invite the reader to
+carefully consider this point.
 
 Conclusion
 ==========
@@ -1142,7 +1318,32 @@ We ask TC to provide leadership!
 Champion
 ========
 
-Hervé Beraud <hberaud@redhat.com> (hberaud)
+- Hervé Beraud <hberaud@redhat.com> (hberaud)
+
+Credits
+=======
+
+Such challenge cannot be taken alone.
+Since the beginning of this topic the collaboration is the keystone of
+the solution. All the elements presented in this document are the fruits of
+numerous collaborations.
+
+For this reason, the author of this document want to thank all the persons who
+participed to this topic. The author of this proposal want to specially thank
+the following people:
+
+- Jay Faulkner for originally raising this issue and for all the efforts made,
+  the support provided, and for all the help given during previous months;
+- Itamar Turner-Trauring for his help on maintaining and on improving
+  Eventlet, which ultimately moved the subject forward significantly;
+- Mike Bayer for his suggestions and for his works on various aspect of this
+  topic, especially AwaitLet;
+- Sean Mooney and Dan Smith for their numerous reviews and their
+  suggestions who significantly helped to reach a credible and feasible
+  solution;
+
+All these collaborations are the proofs that OpenStack is a great community.
+Our community.
 
 Gerrit Topic
 ============
