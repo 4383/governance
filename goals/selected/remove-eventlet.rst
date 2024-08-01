@@ -1,0 +1,99 @@
+==============================
+Remove Eventlet from OpenStack
+==============================
+
+OpenStack is built on the top of asynchronous mechanisms.
+Many Openstack deliverables use the Eventlet library to obtain asynchronous
+those asynchronous mechanisms. The problem is that Eventlet lacks of active
+maintainers and that has led the library to a point where Eventlet is broken
+with each new CPython version.
+
+Asyncio based solutions (awaitlet, aiohttp, etc) offer flexible, perennial,
+and modern alteratives to Eventlet. Since the Eventlet Asyncio hub was
+released, allowing Eventlet and Asyncio to be run within the same process, the
+Eventlet community has encouraged the usage of those alternatives and the
+deprecation of any existing code still using Eventlet.
+
+Champion
+========
+
+- Hervé Beraud <hberaud@redhat.com> (hberaud)
+
+Gerrit Topic
+============
+
+To facilitate tracking, commits related to this goal should use the
+gerrit topic::
+
+  eventlet-removal
+
+An etherpad will be created to track milestone and any related advancement by
+deliverable.
+
+Completion Criteria
+===================
+
+#. (2025.1 or 2025.2) Get the oslo deliverables doing networkIO providing
+   Asyncio based drivers and backends:
+   - oslo.cache;
+   - oslo.messaging;
+   - oslo.db;
+   - etcd3gw;
+   - oslo.metrics;
+#. (2025.1) Get libraries like OpenStackSDK migrated;
+#. (2025.2) Get an OpenStack deliverable as reference user project selected to
+   test Oslo changes related to new Asyncio based drivers;
+#. (2025.2) Get non actively maintained OpenStack deliverables retired;
+#. (2026.2) Get all other OpenStack deliverables relying on Eventlet migrated;
+#. (2027.1) Get usage of Eventlet in oslo deliverables removed;
+#. (2027.2) Get Eventlet retired from OpenStack;
+
+References
+==========
+
+The main reference guide could be found in [1]_. This guide provides
+information about how to migrate from Eventlet to the available alternatives.
+As notes in the first section, if the alternative selected to migrate
+a deliverable is based on Asyncio, then the Asyncio hub should be enabled
+first. To do so, set the ``EVENTLET_HUB`` environment variable to ``asyncio``
+before starting your Eventlet based deliverable. We created this new
+Eventlet hub to make Eventlet and Asyncio interoperable.
+
+From this same link, there is also a reference to identify alternatives for
+an existing snippet of code. This identification is based on table of
+correspondences [2]_ which aim to put solution in the front of the main
+Eventlet patterns [3]_.
+
+This guide will be updated in the coming weeks to provide some migration
+examples for those patterns:
+
+* the server pattern;
+* the client pattern;
+* the dispatch pattern.
+
+Replacing Eventlet usage requires more than just a drop-in replacement. The
+available alternatives are different and will require rethinking the way each
+module is designed in a way that precludes a blind or programmatic
+substitution.
+
+As commented in the OpenStack mailing list [4]_, the migration is based on the
+freedom of decision-making. Some Openstack deliverables represent thousand of
+line code. Asyncio is by nature invasive. Using Asyncio everywhere would
+require to rewrite the deliverables entirely. For this reason we created
+Awaitlet [5]_ which could be used to introduce usage of Asyncio while
+limiting its impact on the existing code.
+
+Current State / Anticipated Impact
+==================================
+
+History of this goal can be found here [6]_
+
+Links
+=====
+
+.. [1] https://eventlet.readthedocs.io/en/latest/asyncio/migration.html
+.. [2] https://github.com/eventlet/eventlet/pull/982
+.. [3] https://eventlet.readthedocs.io/en/latest/design_patterns.html
+.. [4] https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org/thread/4KOGIDNM2SWJDBBFCTCJC3ZSITLMVMDL/#4KOGIDNM2SWJDBBFCTCJC3ZSITLMVMDL
+.. [5] https://github.com/sqlalchemy/awaitlet
+.. [6] https://review.opendev.org/c/openstack/governance/+/902585
